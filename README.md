@@ -2,11 +2,15 @@
 
 ![image-20201124153922625](README.assets/image-20201124153922625.png)
 
-As we know, there were little omics data about SCLC patients and even murine SCLC. Therefore, we accumulated attainability omics data and pre-processed them to make it easier to use. And we also hope this page could be real-time maintained. If you have submitted SCLC data we haven’t recorded or mentioned in list, you could contact us anytime and we would like to integrate your resource in this resource. 
+​	A prevalent bottleneck for metastasis researches is the lack of resected samples because patients with metastases won’t be treated with surgery, which is the case for the majority of SCLC patients. Therefore, mouse models of SCLC which can recapitulate the clinical features of the human disease are especially of value.
 
-To increase analyzing reproducibility of omics analysis mentioned in our paper, we will record and submit all scripts, raw data and processed data for sharing our bioinformatics tools and academic principles. We have submitted all processed data on [Figshare](https://figshare.com/account/projects/92384/articles/13206338) and you could download them followed according agreements. Raw data also had been submitted on GEO database and you could be accessible by clicking [GSE161570]( https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE161570). Besides, we also recorded our codes and figures in Markdown files regarded as tutorials for beginner of omics analysis. And detail description you could get in following pages.
+​	As we known, there were little omics data from SCLC patients and even from murine SCLC. Therefore, we accumulated all attainable omics data and stored them here. To make it easier to use, we pre-processed them by standard pipeline, and the detail codes of processing also recorded in this page. 
 
-In this project, we have modified a lot of function formulas from perfect packages to better use in our data analysis and visualizations. And we also be happy to share them to help you improve your work efficiency in omics data analysis and visualizations.
+​	We hope this page could be real-time maintained. If you have generated and submitted SCLC data we haven’t recorded or mentioned in list, you could contact us anytime and we would like to integrate your resource here. 
+
+​	To increase the reproducibility of omics analysis mentioned in our paper, we will record and submit all scripts, raw data and processed data for sharing our bioinformatics tools and academic principles. We have submitted all processed data on [Figshare](https://figshare.com/account/projects/92384/articles/13206338) and you could download them followed according agreements. Raw data also had been submitted on GEO database, and you could be accessible by clicking [GSE161570]( https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE161570). Besides, we also recorded our figures-making codes in Markdown files, which could be regarded as tutorials for beginner of omics analysis. More detail descriptions of the submitted data you could get in following pages.
+
+​	In this project, to better analyze and visualize our data, we have modified a lot of function formulas from previous perfect packages. And we also be happy to share them to help you improve your work efficiency in omics data analysis and visualizations.
 
 # **All SCLC patients’ data files**
 
@@ -323,25 +327,25 @@ And the detail lists were displayed as following:
 
 ## Codes of Single cell RNA-seq analysis
 
-To show how we analysis scRNA-seq steps by steps, we collected detail processed information in Markdown files that recorded the quality control, batch effect reducing, dimension reducing, cells clustering, pseudo time constructing, dynamics expression genes identification and pathways enrichments.
+​	To show how we analysis scRNA-seq steps by steps, we collected detail processed information and stored in Markdown files, recorded the quality controling, batch effect reducing, dimension reducing, cells clustering, pseudo time constructing, dynamics expression genes identifying and pathways enriching.
 
-Consideration our single cell data were composed by two major parts, including SCLC data with primary sample and metastasis sample and lung organoids data with scramble sample and Kmt2c knocking out sample. Hence, we divide our analysis code into two chapters.
+​	Our single cell RNA-seq data were generated from two individual biological experiments, including SCLC tissues from primary sites and metastatic lesions, and normal lung organoids with sg*scramble* and sg*Kmt2c*. Hence, we divided our analysis code into two chapters.
 
-[Chapter1](scRNA-seq_Chapter1.md) is the codes for SCLC data with primary sample and metastasis sample. And you could access this code by click [here](scRNA-seq_Chapter1.md).
+[Chapter1](scRNA-seq_Chapter1.md) is the code for SCLC data with primary sites and metastatic lesions. And you could access this code by click [here](scRNA-seq_Chapter1.md).
 
-[Chapter2](scRNA-seq_Chapter2.md) is the codes for lung organoids data with scramble sample and Kmt2c knocking out sample. And you could access this code by click [here](scRNA-seq_Chapter2.md).
+[Chapter2](scRNA-seq_Chapter2.md) is the code for normal lung organoids with sg*scramble* and sg*Kmt2c*. And you could access this code by click [here](scRNA-seq_Chapter2.md).
 
 ## Codes of Bulk RNA-seq analysis
 
-[Bulk_RNA ](bulk_RNA.md) is the codes for Bulk RNA-seq analysis in SCLC data.  And you could access this code by click [here](bulk_RNA.md).
+[Bulk_RNA ](bulk_RNA.md) is the code for Bulk RNA-seq analysis in SCLC data.  And you could access this code by click [here](bulk_RNA.md).
 
 ## Codes of Bulk ATAC-seq analysis
 
-[Bulk_ATAC ](bulk_ATAC.md) is the codes for Bulk RNA-seq analysis in SCLC data.  And you could access this code by click [here](bulk_ATAC.md).
+[Bulk_ATAC ](bulk_ATAC.md) is the code for Bulk RNA-seq analysis in SCLC data.  And you could access this code by click [here](bulk_ATAC.md).
 
 ## Codes of Bulk WGBS-seq analysis
 
-[Bulk_WGBS ](bulk_WGBS.md) is the codes for Bulk RNA-seq analysis in SCLC data.  And you could access this code by click [here](bulk_WGBS.md).
+[Bulk_WGBS ](bulk_WGBS.md) is the code for Bulk RNA-seq analysis in SCLC data.  And you could access this code by click [here](bulk_WGBS.md).
 
 # **Citation**
 
