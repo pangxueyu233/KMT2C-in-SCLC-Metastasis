@@ -1,6 +1,6 @@
 # **Concordant Histone and DNA Hypomethylation Promotes Small Cell Lung Cancer Metastasis**
 
-![image-20201124153922625](README.assets/image-20201124153922625.png)
+![image-20210428135420608](README.assets/image-20210428135420608.png)
 
 ​	A prevalent bottleneck for metastasis researches is the lack of resected samples because patients with metastases won’t be treated with surgery, which is the case for the majority of SCLC patients. Therefore, mouse models of SCLC which can recapitulate the clinical features of the human disease are especially of value.
 
@@ -268,36 +268,37 @@ And the detail lists were displayed as following:
 │   │           ├── features.tsv.gz
 │   │           └── matrix.mtx.gz
 │   ├── Others_processed
-│   │   ├── all_genes_signatures.svg
-│   │   ├── Ascl1_Lineage_tranje.png
-│   │   ├── Ascl1_Lineage_tranje_split.png
-│   │   ├── CDX_META_INFO.csv
-│   │   ├── cox_meta_vs_prima.svg
-│   │   ├── CTX_Metastasis_UP_map.png
-│   │   ├── DGE_Meta_Prima_heatmap.pdf
-│   │   ├── FinalCDXDataTable.csv
-│   │   ├── Neurod1_Lineage_tranje_GO_BP.svg
-│   │   ├── SCLC_ASCL1_pseudotime_with_anno.pdf
-│   │   ├── SCLC_ASCL1_pseudotime_with_Nature_Patients_survival_clu1.svg
-│   │   ├── SCLC_ASCL1_pseudotime_with_Nature_Patients_survival_clu2.svg
-│   │   ├── SCLC_ASCL1_pseudotime_with_SCLC_CDX_BARPLOT.svg
-│   │   ├── SCLC_map.png
+│   │   ├── ASCL1_Lineage1_sigma_20_peudotime_with_anno.pdf
+│   │   ├── ASCL1_Lineage1_sigma_20_SCLC_classification.csv
+│   │   ├── CCLE_Metastasis_UP_genes.csv
+│   │   ├── pri_sig_with_Nature_Patients_survival_clu1.svg
+│   │   ├── sample_info.csv
 │   │   ├── SCLC_Nature_Clinical.csv
-│   │   └── SCLC_Nature_RNA.csv
+│   │   ├── SCLC_Nature_RNA.csv
+│   │   ├── v2_batch_effect_all_cells.png
+│   │   ├── v2_dynamics_trend.svg
+│   │   ├── v2_Neurod1_Lineage_tranje_GO_BP.svg
+│   │   ├── v2_percentage_summary.svg
+│   │   ├── v2_SCLC_ASCL1_pseudotime_with_Nature_Patients_survival_clu1.svg
+│   │   ├── v2_SCLC_map.png
+│   │   ├── v3_ASCL1_Lineage1_sigma_20_peudotime_with_anno.pdf
+│   │   └── v3_batch_effect_all_cells.png
 │   └── rds_files
-│       ├── 1_Metastasis1_path.rds
-│       ├── All_cells_markes.rds
+│       ├── all_merge_by_nothing_Only_LL_LT.rds
 │       ├── all_merge_by_nothing.rds
-│       ├── Ascl1_pos_SCLC.rds
+│       ├── ASCL1_Lineage1_sigma_20_col_bin.rds
+│       ├── ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_all_v2.rds
+│       ├── ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_GO_v2.rds
+│       ├── ASCL1_Lineage1_sigma_20_peudotime_genes.rds
+│       ├── ASCL1_Lineage1_sigma_20_peudotime_heatmap_All_genes_m_normalised.rds
+│       ├── ASCL1_Lineage1_sigma_20_peudotime_heatmap_All_genes_m.rds
+│       ├── ASCL1_Lineage1_sigma_20_peudotime_heatmap_anno.rds
+│       ├── ASCL1_Lineage1_sigma_20_peudotime_heatmap_matrix.rds
+│       ├── ASCL1_Lineage1_sigma_20_peudotime_heatmap_m.rds
+│       ├── ASCL1_Lineage1_sigma_20.rds
+│       ├── ASCL1_Lineage1_sigma_20_remind.rds
 │       ├── CTX_Metastasis_UP.rds
-│       ├── final_Metastasis_vs_primary.rds
-│       ├── SCLC_ASCL1_peudotime_genes.rds
-│       ├── SCLC_ASCL1_pseudotime_annotation_row1.rds
-│       ├── SCLC_ASCL1_pseudotime_heatmap_anno.rds
-│       ├── SCLC_ASCL1_pseudotime_heatmap_matrix.rds
-│       ├── SCLC_Neurod1_pseudotime_GO.rds
-│       ├── SCLC_Neurod1_pseudotime_heatmap_anno.rds
-│       └── V2_all_merge_by_nothing1.rds
+│       └── Only_LL_LT.markers.rds
 └── Chapter2
     ├── cellranger_out_files
     │   ├── KMT2C_KO
@@ -318,7 +319,8 @@ And the detail lists were displayed as following:
         ├── only_sub_sc1_both_lineage.rds
         ├── only_sub_sc_both_pseudotime_heatmap_anno_all.rds
         └── only_sub_sc_both_pseudotime_heatmap_matrix_all.rds
-20 directories, 53 files
+
+20 directories, 54 files
 ~~~
 
 **`.bam`** files were so large to submit on database, if you need further information requests for resources and reagents, you should connect the lead contact. 
