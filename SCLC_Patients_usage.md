@@ -56,22 +56,21 @@ library(BuenColors)
 
 ~~~R
 #Firstly, we need to identify our molecular signatures that would be used to stratify patients 
-annotation_row1 <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/SCLC_ASCL1_pseudotime_annotation_row1.rds",mc.cores=20)
+annotation_row1 <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_all_v2.rds",mc.cores=20)
 annotation_row1$gene <- rownames(annotation_row1)
 clu1 <- subset(annotation_row1,Cluster==1)
 clu2 <- subset(annotation_row1,Cluster==2)
 clu3 <- subset(annotation_row1,Cluster==3)
-clu4 <- subset(annotation_row1,Cluster==4)
+#clu4 <- subset(annotation_row1,Cluster==4)
 library(iTALK)
 library(nichenetr)
 library(tidyr)
 clu1 = clu1 %>% mutate(from = convert_mouse_to_human_symbols(gene), to = convert_mouse_to_human_symbols(gene)) %>% drop_na()
 clu2 = clu2 %>% mutate(from = convert_mouse_to_human_symbols(gene), to = convert_mouse_to_human_symbols(gene)) %>% drop_na()
 clu3 = clu3 %>% mutate(from = convert_mouse_to_human_symbols(gene), to = convert_mouse_to_human_symbols(gene)) %>% drop_na()
-clu4 = clu4 %>% mutate(from = convert_mouse_to_human_symbols(gene), to = convert_mouse_to_human_symbols(gene)) %>% drop_na()
 
 #Secondly, we need pre-process our data, such as matching the ID in clinical information and omics data and divide patients in different sub-molecular groups by paper reported.
-CDX_META_INFO <- read.csv("./SCLC_DATA_6/CDX_META_INFO.csv")
+CDX_META_INFO <- read.csv("./SCLC_Patient_data/SCLC_CTC/bulk_RNA/counts_table/CDX_META_INFO.csv")
 CDX_META_INFO$CDX.No. <- paste0("CDX",CDX_META_INFO$CDX.No.)
 CDX_META_INFO$CDX.No. <- gsub("CDX33P","CDX33/33P",CDX_META_INFO$CDX.No.)
 all_tmp_data <- future_lapply(CDX_META_INFO$CDX.No.,function(x){
@@ -102,7 +101,7 @@ all_tmp$Type <- group[all_tmp$id]
 all_tmp$Type <- paste0(all_tmp$Type," + SCLC")
 
 #Then, we need to load our trnascriptome data.
-CDXData <- read.csv("/mnt/data/user_data/xiangyu/workshop/DATABASE/SCLC_Patient_data/SCLC_CTC/bulk_RNA/counts_table/FinalCDXDataTable.csv")
+CDXData <- read.csv("./SCLC_Patient_data/SCLC_CTC/bulk_RNA/counts_table/FinalCDXDataTable.csv")
 CDXData <- CDXData[!duplicated(CDXData$gene_name),]
 rownames(CDXData) <- CDXData$gene_name
 CDXData <- CDXData[,-c(1,2,3)]
@@ -115,27 +114,24 @@ CDXData <- CDXData[both_id,]
 sel_gene_CDXData <- data.frame(clu1=as.character(apply(CDXData[,intersect(colnames(CDXData),unique(clu1$from))],1,mean)),
 clu2=as.character(apply(CDXData[,intersect(colnames(CDXData),unique(clu2$from))],1,mean)),
 clu3=as.character(apply(CDXData[,intersect(colnames(CDXData),unique(clu3$from))],1,mean)),
-clu4=as.character(apply(CDXData[,intersect(colnames(CDXData),unique(clu4$from))],1,mean)),
+#clu4=as.character(apply(CDXData[,intersect(colnames(CDXData),unique(clu4$from))],1,mean)),
 SOX2=as.character(CDXData[,"SOX2"]),
 ASCL1=as.character(CDXData[,"ASCL1"]),
 row.names=rownames(CDXData))
+sel_gene_CDXData_g <- sel_gene_CDXData
 sel_gene_CDXData$clu1 <- as.numeric(as.character(scale(as.numeric(as.character(sel_gene_CDXData$clu1)))))
 sel_gene_CDXData$clu2 <- as.numeric(as.character(scale(as.numeric(as.character(sel_gene_CDXData$clu2)))))
 sel_gene_CDXData$clu3 <- as.numeric(as.character(scale(as.numeric(as.character(sel_gene_CDXData$clu3)))))
-sel_gene_CDXData$clu4 <- as.numeric(as.character(scale(as.numeric(as.character(sel_gene_CDXData$clu4)))))
+#sel_gene_CDXData$clu4 <- as.numeric(as.character(scale(as.numeric(as.character(sel_gene_CDXData$clu4)))))
 sel_gene_CDXData$SOX2 <- as.numeric(as.character(scale(as.numeric(as.character(sel_gene_CDXData$SOX2)))))
 sel_gene_CDXData$ASCL1 <- as.numeric(as.character(scale(as.numeric(as.character(sel_gene_CDXData$ASCL1)))))
-sel_gene_CDXData_g <- sel_gene_CDXData
-
-#Now, we began to stratify patients by specific molecular signatures
-sel_gene_CDXData <- sel_gene_CDXData[,c(1:4)]
+sel_gene_CDXData <- sel_gene_CDXData[,c(1:3)]
 sel_gene_CDXData$group <- unlist(future_lapply(1:nrow(sel_gene_CDXData),function(x){
     sel_tmp <- sel_gene_CDXData[x,]
     group_n <- colnames(sel_tmp)[which(sel_tmp==max(sel_tmp))]
     return(group_n)
     }))
 
-#To visualize the results by heatmap with standard normalization
 chonglai_zscore_1 <- t(apply(sel_gene_CDXData[,-ncol(sel_gene_CDXData)], 1, function(x) (x-mean(x))/sd(x)))
 chonglai_zscore_1[chonglai_zscore_1>1] <- 1
 chonglai_zscore_1[chonglai_zscore_1< -1] <- -1
@@ -160,13 +156,13 @@ chonglai_zscore_1 <- chonglai_zscore_1[rownames(annotation_col1),]
 ph_res <- pheatmap(t(chonglai_zscore_1), useRaster = T, cluster_cols = FALSE,
     cluster_rows = F, show_rownames = TRUE,
     show_colnames = FALSE,
-    clustering_method = NULL, cutree_rows = 0,gaps_col =c(order$Freq[1],order$Freq[1]+order$Freq[2],order$Freq[1]+order$Freq[2]+order$Freq[3]),
+    clustering_method = NULL, cutree_rows = 0,gaps_col =c(order$Freq[1],order$Freq[1]+order$Freq[2]),
     annotation_col = annotation_col1, 
     treeheight_row = 20, breaks = bks, color = hmcols,
     border_color = NA, silent = TRUE, filename = NA)
 ~~~
 
-![image-20201106171022930](SCLC_Patients_usage.assets/image-20201106171022930.png)
+![image-20210428114844713](SCLC_Patients_usage.assets/image-20210428114844713.png)
 
 ## Part3. we use SCLC_DATA_3 as an example to show how to calculate and quantify the survival results.
 

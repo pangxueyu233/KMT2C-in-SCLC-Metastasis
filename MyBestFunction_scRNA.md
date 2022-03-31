@@ -194,21 +194,210 @@ XY_FeaturePlot <- function (object, features, dims = c(1, 2), cells = NULL, cols
 }
 environment(XY_FeaturePlot) <- asNamespace('Seurat')
 
+XY_FeaturePlot_no_order <- function (object, features, dims = c(1, 2), cells = NULL, cols = c("lightgrey",
+      "blue"), pt.size = NULL, min.cutoff = NA, max.cutoff = NA,
+      reduction = NULL, split.by = NULL, shape.by = NULL, blend = FALSE,
+      blend.threshold = 0.5, order = NULL, label = FALSE, label.size = 4,
+      ncol = NULL, combine = TRUE, coord.fixed = FALSE, ...)
+ {
+      no.right <- theme(axis.line.y.right = element_blank(), axis.ticks.y.right = element_blank(),
+          axis.text.y.right = element_blank(), axis.title.y.right = element_text(face = "bold",
+              size = 14, margin = margin(r = 7)))
+      if (is.null(reduction)) {
+          default_order <- c("umap", "tsne", "pca","dm")
+          reducs <- which(default_order %in% names(object@reductions))
+          reduction <- default_order[reducs[1]]
+      }
+      if (length(x = dims) != 2 || !is.numeric(x = dims)) {
+          stop("'dims' must be a two-length integer vector")
+      }
+      if (blend && length(x = features) != 2) {
+          stop("Blending feature plots only works with two features")
+      }
+      dims <- paste0(Key(object = object[[reduction]]), dims)
+      cells <- cells %||% colnames(x = object)
+      data <- FetchData(object = object, vars = c(dims, features),
+          cells = cells)
+      features <- colnames(x = data)[3:ncol(x = data)]
+      min.cutoff <- mapply(FUN = function(cutoff, feature) {
+          return(ifelse(test = is.na(x = cutoff), yes = min(data[,
+              feature]), no = cutoff))
+      }, cutoff = min.cutoff, feature = features)
+      max.cutoff <- mapply(FUN = function(cutoff, feature) {
+          return(ifelse(test = is.na(x = cutoff), yes = max(data[,
+              feature]), no = cutoff))
+      }, cutoff = max.cutoff, feature = features)
+      check.lengths <- unique(x = vapply(X = list(features, min.cutoff,
+          max.cutoff), FUN = length, FUN.VALUE = numeric(length = 1)))
+      if (length(x = check.lengths) != 1) {
+          stop("There must be the same number of minimum and maximum cuttoffs as there are features")
+      }
+      brewer.gran <- ifelse(test = length(x = cols) == 1, yes = brewer.pal.info[cols,
+          ]$maxcolors, no = length(x = cols))
+      data[, 3:ncol(x = data)] <- sapply(X = 3:ncol(x = data),
+          FUN = function(index) {
+              data.feature <- as.vector(x = data[, index])
+              min.use <- SetQuantile(cutoff = min.cutoff[index -
+                  2], data.feature)
+              max.use <- SetQuantile(cutoff = max.cutoff[index -
+                  2], data.feature)
+              data.feature[data.feature < min.use] <- min.use
+              data.feature[data.feature > max.use] <- max.use
+              if (brewer.gran == 2) {
+                  return(data.feature)
+              }
+              data.cut <- if (all(data.feature == 0)) {
+                  0
+              }
+              else {
+                  as.numeric(x = as.factor(x = cut(x = as.numeric(x = data.feature),
+                    breaks = brewer.gran)))
+              }
+              return(data.cut)
+          })
+      colnames(x = data)[3:ncol(x = data)] <- features
+      rownames(x = data) <- cells
+      data$split <- if (is.null(x = split.by)) {
+          RandomName()
+      }
+      else {
+          switch(EXPR = split.by, ident = Idents(object = object)[cells],
+              object[[split.by, drop = TRUE]][cells])
+      }
+      if (!is.factor(x = data$split)) {
+          data$split <- factor(x = data$split)
+      }
+      plots <- vector(mode = "list", length = ifelse(test = blend,
+          yes = 4, no = length(x = features) * length(x = levels(x = data$split))))
+      xlims <- c(min(data[, dims[1]]), max(data[,dims[1]]))
+      ylims <- c(min(data[, dims[2]]), max(data[,dims[2]]))
+      if (blend) {
+          ncol <- 4
+          color.matrix <- BlendMatrix(col.threshold = blend.threshold)
+          colors <- list(color.matrix[, 1], color.matrix[1, ],
+              as.vector(x = color.matrix))
+      }
+      for (i in 1:length(x = levels(x = data$split))) {
+          ident <- levels(x = data$split)[i]
+          data.plot <- data[as.character(x = data$split) == ident,
+              , drop = FALSE]
+          if (blend) {
+              data.plot <- cbind(data.plot[, dims], BlendExpression(data = data.plot[,
+                  features[1:2]]))
+              features <- colnames(x = data.plot)[3:ncol(x = data.plot)]
+          }
+          for (j in 1:length(x = features)) {
+              feature <- features[j]
+              if (blend) {
+                  cols.use <- as.numeric(x = as.character(x = data.plot[,
+                    feature])) + 1
+                  cols.use <- colors[[j]][sort(x = unique(x = cols.use))]
+              }
+              else {
+                  cols.use <- NULL
+              }
+#              data.plot <- data.plot[order(data.plot[,j+2],decreasing=F),]
+              plot <- SingleDimPlot(data = data.plot[, c(dims,
+                  feature)], dims = dims, col.by = feature, pt.size = pt.size,
+                  cols = cols.use, label.size = label.size) +
+                  scale_x_continuous(limits = xlims) + scale_y_continuous(limits = ylims) +
+                  theme_cowplot()
+              if (length(x = levels(x = data$split)) > 1) {
+                  plot <- plot + theme(panel.border = element_rect(fill = NA,
+                    colour = "black"))
+                  plot <- plot + if (i == 1) {
+                    labs(title = feature)
+                  }
+                  else {
+                    labs(title = NULL)
+                  }
+                  if (j == length(x = features) && !blend) {
+                    suppressMessages(expr = plot <- plot + scale_y_continuous(sec.axis = dup_axis(name = ident)) +
+                      no.right)
+                  }
+                  if (j != 1) {
+                    plot <- plot + theme(axis.line.y = element_blank(),
+                      axis.ticks.y = element_blank(), axis.text.y = element_blank(),
+                      axis.title.y.left = element_blank())
+                  }
+                  if (i != length(x = levels(x = data$split))) {
+                    plot <- plot + theme(axis.line.x = element_blank(),
+                      axis.ticks.x = element_blank(), axis.text.x = element_blank(),
+                      axis.title.x = element_blank())
+                  }
+              }
+              else {
+                  plot <- plot + labs(title = feature)
+              }
+              if (!blend) {
+                  plot <- plot + guides(color = NULL)
+                  if (length(x = cols) == 1) {
+                    plot <- plot + scale_color_brewer(palette = cols)
+                  }
+                  else if (length(x = cols) > 1) {
+                    plot <- suppressMessages(expr = plot + scale_color_gradientn(colors = cols,
+                      guide = "colorbar"))
+                  }
+              }
+              if (coord.fixed) {
+                  plot <- plot + coord_fixed()
+              }
+              plot <- plot
+              plots[[(length(x = features) * (i - 1)) + j]] <- plot
+          }
+      }
+      if (blend) {
+          blend.legend <- BlendMap(color.matrix = color.matrix)
+          for (i in 1:length(x = levels(x = data$split))) {
+              suppressMessages(expr = plots <- append(x = plots,
+                  values = list(blend.legend + scale_y_continuous(sec.axis = dup_axis(name = ifelse(test = length(x = levels(x = data$split)) >
+                    1, yes = levels(x = data$split)[i], no = "")),
+                    expand = c(0, 0)) + labs(x = features[1], y = features[2],
+                    title = if (i == 1) {
+                      paste("Color threshold:", blend.threshold)
+                    } else {
+                      NULL
+                    }) + no.right), after = 4 * i - 1))
+          }
+      }
+      plots <- Filter(f = Negate(f = is.null), x = plots)
+      if (combine) {
+          if (is.null(x = ncol)) {
+              ncol <- 2
+              if (length(x = features) == 1) {
+                  ncol <- 1
+              }
+              if (length(x = features) > 6) {
+                  ncol <- 3
+              }
+              if (length(x = features) > 9) {
+                  ncol <- 4
+              }
+          }
+          ncol <- ifelse(test = is.null(x = split.by) || blend,
+              yes = ncol, no = length(x = features))
+          legend <- if (blend) {
+              "none"
+          }
+          else {
+              split.by %iff% "none"
+          }
+          plots <- CombinePlots(plots = plots, ncol = ncol, legend = legend,
+              nrow = split.by %iff% length(x = levels(x = data$split)))
+      }
+      return(plots)
+}
+environment(XY_FeaturePlot_no_order) <- asNamespace('Seurat')
+
 runFDG = function(pca.df, snn, iterations = 600, tool_addr, python.addr){
   current.wd = getwd()
-
   # generate unique name for pca data file
-
   pca.data.fname = paste(sample(LETTERS, 20, TRUE), collapse = "")
   pca.data.fname = paste(pca.data.fname, ".csv", sep = "")
-
   # generate unique name for snn file
-
   snn.fname = paste(sample(LETTERS, 20, TRUE), collapse = "")
   snn.fname = paste(snn.fname, ".smm", sep = "")
-
   # generate unique name for fdg coordinates
-
   fdg.coordinates.fname = paste(sample(LETTERS, 20, TRUE), collapse = "")
   fdg.coordinates.fname = paste(fdg.coordinates.fname, ".csv", sep = "")
   write.csv(pca.df, pca.data.fname)
@@ -229,7 +418,6 @@ seuratToURD2 <- function(seurat.object) {
     # Create an empty URD object
     ds <- new("URD")
     
-
     # Copy over data
     ds@logupx.data <- as(as.matrix(seurat.object@assays$RNA@data), "dgCMatrix")
     if(!any(dim(seurat.object@assays$RNA@counts) == 0)) ds@count.data <- as(as.matrix(seurat.object@assays$RNA@counts[rownames(seurat.object@assays$RNA@data), colnames(seurat.object@assays$RNA@data)]), "dgCMatrix")
@@ -280,7 +468,6 @@ seuratToURD2 <- function(seurat.object) {
       }
     }
     return(ds)
-
   } else {
     stop("Package Seurat is required for this function. To install: install.packages('Seurat')\n")
   }
@@ -290,15 +477,14 @@ environment(seuratToURD2) <- asNamespace('URD')
 XY_PlotUTRLengthShift <- function (results.table, plot.title = "Global shift in 3'UTR length",
     do.ranksum.test = TRUE, return.plot = TRUE, do.plot = FALSE,binwidth,base_size)
 {
-    locations.res.table.up <- subset(res.table, FC_direction ==
-        "Up")
-    pos.upreg <- apply(as.matrix(locations.res.table.up[, c("SiteLocation",
+    locations.results.table.up <- subset(results.table, FC_direction == "Up")
+    pos.upreg <- apply(as.matrix(locations.results.table.up[, c("SiteLocation",
         "NumSites")]), 1, function(x) {
         relative_location(x[1], x[2])
     })
-    locations.res.table.down <- subset(res.table, FC_direction ==
+    locations.results.table.down <- subset(results.table, FC_direction ==
         "Down")
-    pos.downreg <- apply(as.matrix(locations.res.table.down[,
+    pos.downreg <- apply(as.matrix(locations.results.table.down[,
         c("SiteLocation", "NumSites")]), 1, function(x) {
         relative_location(x[1], x[2])
     })
@@ -336,14 +522,17 @@ XY_PlotUTRLengthShift <- function (results.table, plot.title = "Global shift in 
 }
 environment(XY_PlotUTRLengthShift) <- asNamespace("Sierra")
 
-
 XY_heatmap <- function (seurat_obj=seurat_obj, group=group,genes=genes,all_num=all_num,assay_sel=assay_sel,labels_rot=labels_rot,
-  color=color,min_and_max_cut=num_cut,new_names=new_names,show_row_names=show_row_names,mark_gene=mark_gene,label_size=label_size){
+  color=color,min_and_max_cut=num_cut,new_names=new_names,show_row_names=show_row_names,mark_gene=mark_gene,label_size=label_size,scale=scale){
   message("Processed data begain")
   ATAC <- GetAssayData(seurat_obj,slot="data",assay=assay_sel)
   ATAC_sel <- ATAC[genes,]
   ATAC_sel <- as.matrix(ATAC_sel)
-  ATAC_sel_zscore <- t(apply(ATAC_sel, 1, function(x) (x-mean(x))/sd(x)))
+  if (scale==TRUE) {
+    ATAC_sel_zscore <- t(apply(ATAC_sel, 1, function(x) (x-mean(x))/sd(x)))
+    } else {
+      ATAC_sel_zscore <- ATAC_sel
+    }
   sel_cutoff <- min(abs(range(ATAC_sel_zscore)))
   if (is.null(min_and_max_cut)){
     ATAC_sel_zscore[ATAC_sel_zscore > sel_cutoff] <- sel_cutoff
@@ -2480,9 +2669,8 @@ update_n <- function(x, showCategory) {
     if (nrow(x) < n) {
         n <- nrow(x)
     }
-    
-    return(n)
 
+    return(n)
 }
 
 extract_geneSets <- function(x, n) {
@@ -2506,7 +2694,6 @@ list2df <- function(inputList) {
     })
 
     do.call('rbind', ldf)
-
 }
 list2graph <- function(inputList) {
     x <- list2df(inputList)
@@ -2517,9 +2704,10 @@ list2graph <- function(inputList) {
 
 
 XY_PlotCoverage <- function (genome_gr, geneSymbol = "", wig_data = NULL, bamfiles = NULL,
-    wig_same_strand = TRUE, genome = NULL, pdf_output = FALSE,
-    wig_data.tracknames = NULL, bamfile.tracknames = NULL, output_file_name = "",
-    zoom_3UTR = FALSE,showID)
+    peaks.annot = NULL, label.transcripts = FALSE, wig_same_strand = TRUE,
+    genome = NULL, pdf_output = FALSE, wig_data.tracknames = NULL,
+    bamfile.tracknames = NULL, output_file_name = "", zoom_3UTR = FALSE,
+    annotation.fontsize = NULL, axis.fontsize = NULL)
 {
     GenomeInfoDb::seqlevelsStyle(genome_gr) <- "UCSC"
     idx <- which(genome_gr$gene_name == geneSymbol)
@@ -2545,8 +2733,31 @@ XY_PlotCoverage <- function (genome_gr, geneSymbol = "", wig_data = NULL, bamfil
     names(GenomicRanges::elementMetadata(gene_gr))[gene_id_idx] <- "ensemble_id"
     names(GenomicRanges::elementMetadata(gene_gr))[gene_name_idx] <- "gene_id"
     gene_txdb <- GenomicFeatures::makeTxDbFromGRanges(gene_gr)
+    if (label.transcripts) {
+        transcript.fontsize = annotation.fontsize
+    }
+    else {
+        transcript.fontsize = 0
+    }
     gtrack <- Gviz::GeneRegionTrack(gene_txdb, start = start,
-        end = end, chromosome = chrom, name = geneSymbol,transcriptAnnotation = "symbol")
+        end = end, chromosome = chrom, name = geneSymbol, just.group = "above",
+        transcriptAnnotation = "symbol", showId = FALSE, fontsize.group = transcript.fontsize)
+    if (!is.null(peaks.annot)) {
+        start.sites <- as.numeric(sub(".*:.*:(.*)-.*:.*", "\\1",
+            peaks.annot))
+        end.sites <- as.numeric(sub(".*:.*:.*-(.*):.*", "\\1",
+            peaks.annot))
+        peak.widths <- end.sites - start.sites
+        peak.names <- names(peaks.annot)
+        if (is.null(peak.names))
+            peak.names <- peaks.annot
+        atrack <- Gviz::AnnotationTrack(start = start.sites,
+            width = peak.widths, chromosome = chrom, strand = "*",
+            name = "Peak", group = peak.names, genome = genome,
+            just.group = "above", showId = TRUE, fontsize.group = annotation.fontsize,
+            rotation.title = 90)
+        gtrack <- c(gtrack, atrack)
+    }
     dtrack <- list()
     wig_tracks <- list()
     if (!is.null(wig_data)) {
@@ -2567,7 +2778,7 @@ XY_PlotCoverage <- function (genome_gr, geneSymbol = "", wig_data = NULL, bamfil
             S4Vectors::mcols(tmp_gr) <- S4Vectors::mcols(tmp_gr)[i]
             dtrack_name <- names(S4Vectors::mcols(tmp_gr))
             wig_tracks[[length(wig_tracks) + 1]] <- Gviz::DataTrack(tmp_gr,
-                name = dtrack_name, type = "histogram", genome = genome,ylim = ylim)
+                name = dtrack_name, type = "histogram", genome = genome)
         }
     }
     if (length(bamfiles) > 0) {
@@ -2631,21 +2842,24 @@ XY_PlotCoverage <- function (genome_gr, geneSymbol = "", wig_data = NULL, bamfil
             pdf(file = output_file_name, width = 24, height = 18)
         }
     }
-    Gviz::plotTracks(toPlot, from = start, to = end, chromosome = chrom,
-        transcriptAnnotation = "gene")
+    extra.space = round((end - start) * 0.02)
+    Gviz::plotTracks(toPlot, from = start, to = end, extend.left = extra.space,
+        extend.right = extra.space, chromosome = chrom, transcriptAnnotation = "transcript",
+        showId = TRUE, fontsize = axis.fontsize)
     if (zoom_3UTR) {
         idx <- which(genome_gr$type == "three_prime_utr")
         start <- min(IRanges::start(IRanges::ranges(genome_gr[idx])))
         end <- max(IRanges::end(IRanges::ranges(genome_gr[idx])))
-        Gviz::plotTracks(toPlot, from = start, to = end, chromosome = chrom,
-            transcriptAnnotation = "gene",showID = showID)
+        extra.space = round((end - start) * 1.2)
+        Gviz::plotTracks(toPlot, from = end-extra.space, to = end, extend.left = extra.space,
+            extend.right = extra.space, chromosome = chrom, transcriptAnnotation = "transcript",
+            showId = TRUE, fontsize = axis.fontsize)
     }
     if (pdf_output) {
         dev.off()
     }
 }
 environment(XY_PlotCoverage) <- asNamespace("Sierra")
-
 
 
 cal_US_in_seurat <- function(seurat=seurat,nmat=nmat){
@@ -3181,36 +3395,35 @@ XY_ridgeplot.gseaResult <- function(x, showCategory=30, fill="p.adjust", core_en
     if (!fill %in% colnames(x@result)) {
         stop("'fill' variable not available ...")
     }
-    
+
     ## geom_density_ridges <- get_fun_from_pkg('ggridges', 'geom_density_ridges')
-    
+
     n <- showCategory
     if (core_enrichment) {
         gs2id <- geneInCategory(x)[seq_len(n)]
     } else {
         gs2id <- x@geneSets[x$ID[seq_len(n)]]
     }
-    
+
     gs2val <- lapply(gs2id, function(id) {
         res <- x@geneList[id]
         res <- res[!is.na(res)]
     })
-    
+
     nn <- names(gs2val)
     i <- match(nn, x$ID)
     nn <- x$Description[i]
-    
+
     j <- order(x$NES[i], decreasing=FALSE)
-    
+
     len <- sapply(gs2val, length)
     gs2val.df <- data.frame(category = rep(nn, times=len),
                             color = rep(x[i, fill], times=len),
                             value = unlist(gs2val))
-    
+
     colnames(gs2val.df)[2] <- fill
     gs2val.df$category <- factor(gs2val.df$category, levels=nn[j])
     return(gs2val.df)
-
   }
 environment(XY_ridgeplot.gseaResult) <- asNamespace('enrichplot')
 
@@ -3334,18 +3547,12 @@ environment(XY_make_cicero_cds) <- asNamespace('monocle3')
 
 XY_plotPCA = function(data, meta_info=meta_info,intgroup="condition", ntop=500, returnData=FALSE,label=label)
 {
-
   # calculate the variance for each gene
-
   rv <- rowVars(data)
-
   # select the ntop genes by variance
-
   select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
   pca <- prcomp(data[select,])
-
   # the contribution to the total variance for each component
-
   percentVar <- pca$sdev^2 / sum(pca$sdev^2)
   intgroup.df <- as.data.frame(meta_info[, intgroup, drop=FALSE])
   group <- if (length(intgroup) > 1) {
@@ -3366,5 +3573,319 @@ XY_plotPCA = function(data, meta_info=meta_info,intgroup="condition", ntop=500, 
       )
 }
 environment(XY_plotPCA) <- asNamespace('DESeq2')
+
+
+
+require(Seurat)
+require(patchwork)
+require(ggplot2)
+## remove the x-axis text and tick
+## plot.margin to adjust the white space between each plot.
+## ... pass any arguments to VlnPlot in Seurat
+modify_vlnplot <- function(obj, 
+                          feature, 
+                          pt.size = 0, 
+                          plot.margin = unit(c(-0.75, 0, -0.75, 0), "cm"),
+                          ...) {
+  p<- VlnPlot(obj, features = feature, pt.size = pt.size, ... )  + 
+    xlab("") + ylab(feature) + ggtitle("") + 
+    theme(legend.position = "none", 
+          axis.text.x = element_blank(), 
+          axis.ticks.x = element_blank(), 
+          axis.title.y = element_text(size = rel(1), angle = 0), 
+          axis.text.y = element_text(size = rel(1)), 
+          plot.margin = plot.margin ) 
+  return(p)
+}
+
+## extract the max value of the y axis
+extract_max<- function(p){
+  ymax<- max(ggplot_build(p)$layout$panel_scales_y[[1]]$range$range)
+  return(ceiling(ymax))
+}
+
+
+## main function
+StackedVlnPlot<- function(obj, features,
+                          pt.size = 0, 
+                          plot.margin = unit(c(-0.75, 0, -0.75, 0), "cm"),
+                          ...) {
+  
+  plot_list<- purrr::map(features, function(x) modify_vlnplot(obj = obj,feature = x, ...))
+  
+  # Add back x-axis title to bottom plot. patchwork is going to support this?
+  plot_list[[length(plot_list)]]<- plot_list[[length(plot_list)]] +
+    theme(axis.text.x=element_text(), axis.ticks.x = element_line())
+  
+  # change the y-axis tick to only max value 
+  ymaxs<- purrr::map_dbl(plot_list, extract_max)
+  plot_list<- purrr::map2(plot_list, ymaxs, function(x,y) x + 
+                            scale_y_continuous(breaks = c(y)) + 
+                            expand_limits(y = y))
+
+  p<- patchwork::wrap_plots(plotlist = plot_list, ncol = 1)
+  return(p)
+}
+
+
+
+XY_DUTest <- function (apa.seurat.object, population.1, population.2 = NULL,
+    exp.thresh = 0.1, fc.thresh = 0.25, adj.pval.thresh = 0.05,
+    num.splits = 6, seed.use = 1, feature.type = c("UTR3", "UTR5",
+        "exon", "intron"), include.annotations = FALSE, filter.pA.stretch = FALSE,
+    verbose = TRUE, do.MAPlot = FALSE, return.dexseq.res = FALSE,
+    ncores = 1)
+{
+    if (!"DEXSeq" %in% rownames(x = installed.packages())) {
+        stop("Please install DEXSeq before using this function\n         (http://bioconductor.org/packages/release/bioc/html/DEXSeq.html)")
+    }
+    high.expressed.peaks <- GetExpressedPeaks(apa.seurat.object,
+        population.1, population.2, threshold = exp.thresh)
+    length(high.expressed.peaks)
+    annot.subset <- Tool(apa.seurat.object, "Sierra")[high.expressed.peaks,
+        ]
+    peaks.to.use <- apply(annot.subset, 1, function(x) {
+        ifelse(sum(x[feature.type] == "YES") >= 1, TRUE, FALSE)
+    })
+    peaks.to.use <- names(peaks.to.use[which(peaks.to.use ==
+        TRUE)])
+    high.expressed.peaks <- intersect(high.expressed.peaks, peaks.to.use)
+    if (verbose)
+        print(paste(length(high.expressed.peaks), "expressed peaks in feature types",
+            toString(feature.type)))
+    if (filter.pA.stretch) {
+        if (is.null(Tool(apa.seurat.object, "Sierra")$pA_stretch)) {
+            stop("pA_stretch not in annotation data: please run nnotate_gr_from_gtf with\n           an input genome to provide required annotation.")
+        } else {
+            annot.subset <- Tool(apa.seurat.object, "Sierra")[high.expressed.peaks,
+                ]
+            peaks.non.arich <- rownames(subset(annot.subset,
+                pA_stretch == FALSE))
+            high.expressed.peaks <- intersect(high.expressed.peaks,
+                peaks.non.arich)
+            if (verbose)
+                print(paste(length(high.expressed.peaks), "peaks after filtering out A-rich annotations"))
+        }
+    }
+    annotations.highly.expressed <- Tool(apa.seurat.object, "Sierra")[high.expressed.peaks,
+        ]
+    annotations.highly.expressed <- subset(annotations.highly.expressed,
+        Gene_name != "")
+    high.expressed.peaks <- rownames(annotations.highly.expressed)
+    gene.names <- annotations.highly.expressed[, "Gene_name"]
+    gene.table <- table(gene.names)
+    multi.genes <- gene.table[gene.table > 1]
+    if (verbose)
+        print(paste(length(multi.genes), "genes detected with multiple peak sites expressed"))
+    multi.gene.names <- names(multi.genes)
+    peaks.use <- high.expressed.peaks[which(gene.names %in% multi.gene.names)]
+    if (verbose)
+        print(paste(length(peaks.use), "individual peak sites to test"))
+    set.seed(seed.use)
+    if (length(population.1) == 1) {
+        cells.1 <- names(Seurat::Idents(apa.seurat.object))[which(Seurat::Idents(apa.seurat.object) ==
+            population.1)]
+    } else {
+        cells.1 <- population.1
+    }
+    cells.1 = sample(cells.1)
+    cell.sets1 <- split(cells.1, sort(1:length(cells.1)%%num.splits))
+    profile.set1 = matrix(, nrow = length(peaks.use), ncol = length(cell.sets1))
+    for (i in 1:length(cell.sets1)) {
+        this.set <- cell.sets1[[i]]
+        sub.matrix <- Seurat::GetAssayData(apa.seurat.object,
+            slot = "counts", assay = "RNA")[peaks.use, this.set]
+        if (length(this.set) > 1) {
+            this.profile <- as.numeric(apply(sub.matrix, 1, function(x) sum(x)))
+            profile.set1[, i] <- this.profile
+        } else {
+            profile.set1[, i] <- sub.matrix
+        }
+    }
+    rownames(profile.set1) <- peaks.use
+    colnames(profile.set1) <- paste0("Population1_", 1:length(cell.sets1))
+    if (is.null(population.2)) {
+        cells.2 <- setdiff(colnames(apa.seurat.object), cells.1)
+    } else {
+        if (length(population.2) == 1) {
+            cells.2 <- names(Seurat::Idents(apa.seurat.object))[which(Seurat::Idents(apa.seurat.object) ==
+                population.2)]
+        } else {
+            cells.2 <- population.2
+        }
+    }
+    cells.2 = sample(cells.2)
+    cell.sets2 <- split(cells.2, sort(1:length(cells.2)%%num.splits))
+    profile.set2 = matrix(, nrow = length(peaks.use), ncol = length(cell.sets2))
+    for (i in 1:length(cell.sets2)) {
+        this.set <- cell.sets2[[i]]
+        sub.matrix <- Seurat::GetAssayData(apa.seurat.object,
+            slot = "counts", assay = "RNA")[peaks.use, this.set]
+        if (length(this.set) > 1) {
+            this.profile <- as.numeric(apply(sub.matrix, 1, function(x) sum(x)))
+            profile.set2[, i] <- this.profile
+        } else {
+            profile.set2[, i] <- sub.matrix
+        }
+    }
+    rownames(profile.set2) <- peaks.use
+    colnames(profile.set2) <- paste0("Population2_", 1:length(cell.sets2))
+    peak.matrix <- cbind(profile.set1, profile.set2)
+    sampleTable <- data.frame(row.names = c(colnames(profile.set1),
+        colnames(profile.set2)), condition = c(rep("target",
+        ncol(profile.set1)), rep("comparison", ncol(profile.set2))))
+    dexseq.feature.table <- Tool(apa.seurat.object, "Sierra")[,
+        c("Gene_name", "Gene_part", "Peak_number")]
+    dexseq.feature.table$Peak <- rownames(dexseq.feature.table)
+    dexseq.feature.table <- dexseq.feature.table[rownames(peak.matrix),
+        ]
+    rownames(dexseq.feature.table) <- paste0(dexseq.feature.table$Gene_name,
+        ":", dexseq.feature.table$Peak_number)
+    rownames(peak.matrix) <- rownames(dexseq.feature.table)
+    peak_ID_set = dexseq.feature.table[rownames(peak.matrix),
+        "Peak_number"]
+    gene_names = dexseq.feature.table[rownames(peak.matrix),
+        "Gene_name"]
+    dxd = DEXSeq::DEXSeqDataSet(peak.matrix, sampleData = sampleTable,
+        groupID = gene_names, featureID = peak_ID_set, design = ~sample +
+            exon + condition:exon)
+    if (verbose)
+        print("Running DEXSeq test...")
+    if (ncores > 1) {
+        BPPARAM = BiocParallel::MulticoreParam(workers = ncores)
+        dxd = DEXSeq::estimateSizeFactors(dxd, locfunc = genefilter::shorth)
+        dxd = DEXSeq::estimateDispersions(dxd, BPPARAM = BPPARAM)
+        dxd = DEXSeq::testForDEU(dxd, BPPARAM = BPPARAM)
+        dxd = DEXSeq::estimateExonFoldChanges(dxd, BPPARAM = BPPARAM)
+        dxr1 = DEXSeq::DEXSeqResults(dxd)
+    } else {
+        dxd = DEXSeq::estimateSizeFactors(dxd, locfunc = genefilter::shorth)
+        dxd = DEXSeq::estimateDispersions(dxd)
+        dxd = DEXSeq::testForDEU(dxd)
+        dxd = DEXSeq::estimateExonFoldChanges(dxd)
+        dxr1 = DEXSeq::DEXSeqResults(dxd)
+    }
+    if (do.MAPlot)
+        DEXSeq::plotMA(dxr1, alpha = adj.pval.thresh, ylim = c(min(dxr1$log2fold_target_comparison),
+            max(dxr1$log2fold_target_comparison)))
+    if (return.dexseq.res)
+        return(dxr1)
+    dxrSig <- subset(as.data.frame(dxr1), padj < adj.pval.thresh &
+        abs(log2fold_target_comparison) > fc.thresh)
+    dxrSig_subset <- dxrSig[, c("groupID", "exonBaseMean", "pvalue",
+        "padj", "log2fold_target_comparison")]
+    peaks.to.add = dexseq.feature.table[rownames(dxrSig_subset),
+        "Peak"]
+    rownames(dxrSig_subset) = peaks.to.add
+    population.1.pct <- get_percent_expression(apa.seurat.object,
+        population.1, remainder = FALSE, geneSet = rownames(dxrSig_subset))
+    if (is.null(population.2)) {
+        population.2.pct <- get_percent_expression(apa.seurat.object,
+            population.1, remainder = TRUE, geneSet = rownames(dxrSig_subset))
+        population.2 <- "Remainder"
+    } else {
+        population.2.pct <- get_percent_expression(apa.seurat.object,
+            population.2, remainder = FALSE, geneSet = rownames(dxrSig_subset))
+    }
+    dxrSig_subset$population1_pct <- population.1.pct
+    dxrSig_subset$population2_pct <- population.2.pct
+    feature.type <- Tool(apa.seurat.object, "Sierra")[rownames(dxrSig_subset),
+        c("FeaturesCollapsed")]
+    dxrSig_subset$feature_type = feature.type
+    if (include.annotations) {
+        junction.annot <- Tool(apa.seurat.object, "Sierra")[rownames(dxrSig_subset),
+            c("pA_motif", "pA_stretch")]
+        dxrSig_subset <- cbind(dxrSig_subset, junction.annot)
+        dxrSig_subset <- dxrSig_subset[, c("groupID", "feature_type",
+            "pA_motif", "pA_stretch", "population1_pct",
+            "population2_pct", "pvalue", "padj", "log2fold_target_comparison")]
+        colnames(dxrSig_subset) <- c("gene_name", "genomic_feature(s)",
+            "pA_motif", "pA_stretch", "population1_pct",
+            "population2_pct", "pvalue", "padj", "Log2_fold_change")
+    } else {
+        dxrSig_subset <- dxrSig_subset[, c("groupID", "feature_type",
+            "population1_pct", "population2_pct", "pvalue", "padj",
+            "log2fold_target_comparison")]
+        colnames(dxrSig_subset) <- c("gene_name", "genomic_feature(s)",
+            "population1_pct", "population2_pct", "pvalue", "padj",
+            "Log2_fold_change")
+    }
+    dxrSig_subset <- dxrSig_subset[order(dxrSig_subset$padj,
+        decreasing = FALSE), ]
+    return(dxrSig_subset)
+}
+environment(XY_DUTest) <- asNamespace('Sierra')
+
+
+
+XY_PlotCoverage_selected <- function (genome_gr, geneSymbol = "",chrom,start,end, bamfiles = NULL, peaks.annot = NULL,
+ genome = NULL,annotation.fontsize = NULL) {
+    GenomeInfoDb::seqlevelsStyle(genome_gr) <- "UCSC"
+    idx <- which(genome_gr$gene_name == geneSymbol)
+    genome_gr <- genome_gr[idx]
+    start_sel <- min(IRanges::start(IRanges::ranges(genome_gr)))
+    end_sel <- max(IRanges::end(IRanges::ranges(genome_gr)))
+    chrom_sel <- as.character(GenomicRanges::seqnames(genome_gr))[1]
+    gene_strand <- as.character(BiocGenerics::strand(genome_gr))[1]
+    toExtract_gr <- GenomicRanges::GRanges(seqnames = chrom_sel,ranges = IRanges::IRanges(start_sel - 1, width = end_sel - start_sel +3), strand = gene_strand)
+    gene_gr <- IRanges::subsetByOverlaps(genome_gr, toExtract_gr)
+    sel_gr <- GenomicRanges::GRanges(seqnames = chrom,ranges = IRanges::IRanges(start - 1, width = end - start +3), strand = gene_strand)
+    tmp_gr <- findOverlaps(sel_gr, gene_gr, type="any")
+    gene_gr <- gene_gr[tmp_gr@to,]
+    GenomeInfoDb::seqlevelsStyle(gene_gr) <- "UCSC"
+    GenomeInfoDb::seqlevels(gene_gr) <- chrom
+    gene_name_idx <- which(names(GenomicRanges::elementMetadata(gene_gr)) =="gene_name")
+    gene_id_idx <- which(names(GenomicRanges::elementMetadata(gene_gr)) =="gene_id")
+    names(GenomicRanges::elementMetadata(gene_gr))[gene_id_idx] <- "ensemble_id"
+    names(GenomicRanges::elementMetadata(gene_gr))[gene_name_idx] <- "gene_id"
+    gene_txdb <- GenomicFeatures::makeTxDbFromGRanges(gene_gr)
+    transcript.fontsize = annotation.fontsize
+    gtrack <- Gviz::GeneRegionTrack(gene_txdb, start = start,
+        end = end, chromosome = chrom, name = geneSymbol, just.group = "above",
+        transcriptAnnotation = "symbol", showId = FALSE, fontsize.group = transcript.fontsize)
+    start.sites <- as.numeric(sub(".*:.*:(.*)-.*:.*", "\\1",peaks.annot))
+    end.sites <- as.numeric(sub(".*:.*:.*-(.*):.*", "\\1",peaks.annot))
+    peak.widths <- end.sites - start.sites
+    peak.names <- names(peaks.annot)
+    peak.names <- peaks.annot
+    atrack <- Gviz::AnnotationTrack(start = start.sites,
+        width = peak.widths, chromosome = chrom, strand = "*",
+        name = "Peak", group = peak.names, genome = genome,
+        just.group = "above", showId = TRUE, fontsize.group = annotation.fontsize,
+        rotation.title = 90)
+    gtrack <- c(gtrack, atrack)
+    dtrack <- list()
+    bamfile.tracknames <- bamfiles
+    names(bamfile.tracknames) <- bamfiles
+    toExtract_gr <- GenomicRanges::GRanges(seqnames = chrom,ranges = IRanges::IRanges(start - 50, width = end - start + 50), strand = gene_strand)
+    for (i in bamfiles) {
+        bamHeader <- Rsamtools::scanBamHeader(i)
+        if (length(grep(pattern = chrom, x = names(bamHeader[[i]]$targets))) ==0) {
+            GenomeInfoDb::seqlevelsStyle(toExtract_gr) <- "NCBI"
+        } else {
+            GenomeInfoDb::seqlevelsStyle(toExtract_gr) <- "UCSC"
+        }
+        param <- Rsamtools::ScanBamParam(which = toExtract_gr)
+        bf <- Rsamtools::BamFile(i)
+        open(bf)
+        chunk0 <- GenomicAlignments::readGAlignments(bf,param = param)
+        GenomeInfoDb::seqlevelsStyle(chunk0) <- "UCSC"
+        close(bf)
+        idx <- which(as.character(BiocGenerics::strand(chunk0)) == gene_strand)
+        if (length(idx) == 0) {
+            next
+        }
+        tmp <- GenomicRanges::coverage(chunk0[idx])
+        gr <- GenomicRanges::GRanges(seqnames = chrom, ranges = IRanges::IRanges(start:end,width = 1), strand = gene_strand)
+        S4Vectors::mcols(gr) <- as.numeric(tmp[[chrom]])[start:end]
+        dtrack[[length(dtrack) + 1]] <- Gviz::DataTrack(gr,name = bamfile.tracknames[i], type = "histogram",genome = genome)
+    }
+    toPlot <- c(gtrack, dtrack)
+    extra.space = round((end - start) * 0.02)
+    Gviz::plotTracks(toPlot, from = start, to = end, extend.left = extra.space,
+        extend.right = extra.space, chromosome = chrom, transcriptAnnotation = "transcript",
+        showId = TRUE, fontsize = NULL)
+}
+environment(XY_PlotCoverage) <- asNamespace("Sierra")
 ~~~
 

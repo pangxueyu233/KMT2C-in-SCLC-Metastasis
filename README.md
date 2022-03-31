@@ -1,6 +1,8 @@
-# **Concordant Histone and DNA Hypomethylation Promotes Small Cell Lung Cancer Metastasis**
+# **KMT2C deficiency promotes small cell lung
+cancer metastasis through DNMT3A-mediated
+epigenetic reprogramming**
 
-![image-20210428135420608](README.assets/image-20210428135420608.png)
+![image-20211108205319745](README.assets/image-20211108205319745.png)
 
 ​	A prevalent bottleneck for metastasis researches is the lack of resected samples because patients with metastases won’t be treated with surgery, which is the case for the majority of SCLC patients. Therefore, mouse models of SCLC which can recapitulate the clinical features of the human disease are especially of value.
 

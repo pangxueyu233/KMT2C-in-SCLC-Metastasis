@@ -164,7 +164,7 @@ mcsaveRDS(all_merge,"./merge_all/all_merge_by_nothing.rds")
 # Part4. Mere primary (Left lung) and metastasis sites (liver tumor) samples
 
 ~~~R
-merge_by_nothing_tumor <- mcreadRDS("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/all_merge_by_nothing.rds",mc.cores=20)
+merge_by_nothing_tumor <- mcreadRDS("./merge_all/all_merge_by_nothing.rds",mc.cores=20)
 Idents(merge_by_nothing_tumor) <- merge_by_nothing_tumor$group
 Only_LL_LT <- subset(merge_by_nothing_tumor,idents=c("LL","LT"))
 library(reticulate)
@@ -201,7 +201,7 @@ p2 <- DimPlot(object = Only_LL_LT, reduction = "openTSNE",group.by="PhenoGraph50
 p3 <- DimPlot(object = Only_LL_LT, reduction = "openTSNE",group.by="PhenoGraph600",label=TRUE) +NoLegend()+labs(title="Only_LL_LT_openTSNE")
 p4 <- DimPlot(object = Only_LL_LT, reduction = "openTSNE",group.by="PhenoGraph300",label=TRUE) +NoLegend()+labs(title="Only_LL_LT_openTSNE")
 plot_grid(p1,p2,p3,p4,ncol=4)
-mcsaveRDS(Only_LL_LT,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/all_merge_by_nothing_Only_LL_LT.rds", mc.cores = 20)
+mcsaveRDS(Only_LL_LT,"./merge_all/all_merge_by_nothing_Only_LL_LT.rds", mc.cores = 20)
 ~~~
 
 ![image-20210428103311314](scRNA-seq_Chapter1.assets/image-20210428103311314.png)
@@ -261,11 +261,11 @@ Idents(object = Only_LL_LT,cells = Only_LL_LT_clu_9) <- "Neutrophil"
 Idents(object = Only_LL_LT,cells = Only_LL_LT_clu_10) <- "Fibroblast"
 Idents(object = Only_LL_LT,cells = Only_LL_LT_clu_11) <- "B CELL"
 Only_LL_LT$v2_Cell_annotation <- Idents(Only_LL_LT)
-mcsaveRDS(Only_LL_LT,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/all_merge_by_nothing_Only_LL_LT.rds", mc.cores = 20)
+mcsaveRDS(Only_LL_LT,"./merge_all/all_merge_by_nothing_Only_LL_LT.rds", mc.cores = 20)
 ~~~
 
 ~~~R
-Only_LL_LT <- mcreadRDS("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/all_merge_by_nothing_Only_LL_LT.rds", mc.cores = 20)
+Only_LL_LT <- mcreadRDS("./merge_all/all_merge_by_nothing_Only_LL_LT.rds", mc.cores = 20)
 sel_colors <- c("#F2673A","#318bc8","#C878B2","#72C8F1","#359945","#4AC2C5","#4858A7")
 names_clu <- c("Ascl1_SCLC", "Neurod1_SCLC", "T CELL", "B CELL", "Macrophage",  "Neutrophil", "Fibroblast")
 col <- sel_colors
@@ -273,7 +273,7 @@ names(col) <- names_clu
 col <- c(col,"#d7d7d7")
 names(col)[length(col)] <- "OTS"
 aa <- XY_DimPlot(Only_LL_LT, reduction = 'openTSNE', label = FALSE,repel=TRUE, pt.size = .5,group.by="v2_Cell_annotation",cols=col[levels(Only_LL_LT$v2_Cell_annotation)]) + labs(title="LL & LT")
-ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Figure_making/v2_SCLC_map.png", plot=aa,width = 8, height = 6,dpi=1080)
+ggsave("./merge_all/Figure_making/v2_SCLC_map.png", plot=aa,width = 8, height = 6,dpi=1080)
 ~~~
 
 ![image-20210428103446224](scRNA-seq_Chapter1.assets/image-20210428103446224.png)
@@ -298,7 +298,7 @@ Only_LL_LT$new_anno5[which(Only_LL_LT$group!="LT")] <- "OTS"
 Only_LL_LT$new_anno5 <- factor(Only_LL_LT$new_anno5,levels=c("OTS","Ascl1_SCLC", "Neurod1_SCLC", "T CELL", "B CELL", "Macrophage",  "Neutrophil", "Fibroblast"))
 p2 <- XY_DimPlot(Only_LL_LT, reduction = 'openTSNE', label = FALSE,repel=TRUE, pt.size = .1,group.by="new_anno5",cols=col[levels(Only_LL_LT$new_anno5)]) + labs(title="LT")
 a <- plot_grid(p1,p2,nrow=1)
-ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Figure_making/v2_batch_effect_all_cells.png", plot=a,width = 11, height = 4,dpi=1080)
+ggsave("./merge_all/Figure_making/v2_batch_effect_all_cells.png", plot=a,width = 11, height = 4,dpi=1080)
 ~~~
 
 ![image-20210428104044866](scRNA-seq_Chapter1.assets/image-20210428104044866.png)
@@ -322,7 +322,7 @@ Only_LL_LT$new_anno5[which(Only_LL_LT$group!="LT")] <- "OTS"
 Only_LL_LT$new_anno5 <- factor(Only_LL_LT$new_anno5,levels=c("OTS","SCLC", "T CELL", "B CELL", "Macrophage",  "Neutrophil", "Fibroblast"))
 p2 <- XY_DimPlot(Only_LL_LT, reduction = 'openTSNE', label = FALSE,repel=TRUE, pt.size = .1,group.by="new_anno5",cols=col[levels(Only_LL_LT$new_anno5)]) + labs(title="LT")
 a <- plot_grid(p1,p2,nrow=1)
-ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Figure_making/v3_batch_effect_all_cells.png", plot=a,width = 11, height = 4,dpi=1080)
+ggsave("./merge_all/Figure_making/v3_batch_effect_all_cells.png", plot=a,width = 11, height = 4,dpi=1080)
 
 ~~~
 
@@ -330,12 +330,12 @@ ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Fi
 
 ~~~R
 # Display signatures genes in each cells subtypes
-Only_LL_LT <- mcreadRDS("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/all_merge_by_nothing_Only_LL_LT.rds", mc.cores = 20)
+Only_LL_LT <- mcreadRDS("./merge_all/all_merge_by_nothing_Only_LL_LT.rds", mc.cores = 20)
 Idents(Only_LL_LT) <- Only_LL_LT$Cell_annotation
 Only_LL_LT.markers <- FindAllMarkers(object = Only_LL_LT, only.pos = TRUE, min.pct = 0.1,thresh.use = 0.1)
-mcsaveRDS(Only_LL_LT.markers,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Only_LL_LT.markers.rds")
+mcsaveRDS(Only_LL_LT.markers,"./merge_all/Only_LL_LT.markers.rds")
 
-Only_LL_LT.markers <- mcreadRDS("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Only_LL_LT.markers.rds")
+Only_LL_LT.markers <- mcreadRDS("./merge_all/Only_LL_LT.markers.rds")
 Sel_Markers1 <- XY_subset(subset(Only_LL_LT.markers,cluster=="SCLC"),"gene",c("Ascl1","Chga","Ddc","Nfib"))
 Sel_Markers2 <- XY_subset(subset(Only_LL_LT.markers,cluster=="B CELL"),"gene",c("Cd79a","Cd74","Cd79b","Mzb1"))
 Sel_Markers3 <- XY_subset(subset(Only_LL_LT.markers,cluster=="Macrophage"),"gene",c("Cd14","Cd68","Fcgr3","Fcgr1"))
@@ -379,7 +379,7 @@ geom_stratum() +  #代替 geom_col() 绘制堆叠柱形图
 geom_flow(alpha = 0.5) +  #绘制同类别之间的连接线
 theme_classic() +
 labs(x = '', y = 'Relative Abundance(%)',title="LL -> LT")
-ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Figure_making/v2_percentage_summary.svg", plot=p2,width = 6, height = 4,dpi=1080)
+ggsave("./merge_all/Figure_making/v2_percentage_summary.svg", plot=p2,width = 6, height = 4,dpi=1080)
 ~~~
 
 ![image-20210428135202217](scRNA-seq_Chapter1.assets/image-20210428135202217.png)
@@ -388,7 +388,7 @@ ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Fi
 
 ~~~R
 # Extract the Ascl1+ SCLC populations to re-analysis
-Only_LL_LT <- mcreadRDS("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/all_merge_by_nothing_Only_LL_LT.rds", mc.cores = 20)
+Only_LL_LT <- mcreadRDS("./merge_all/all_merge_by_nothing_Only_LL_LT.rds", mc.cores = 20)
 Idents(Only_LL_LT) <- Only_LL_LT$v2_Cell_annotation
 ASCL1_Lineage <- subset(Only_LL_LT,idents="Ascl1_SCLC")
 sel_colors <- c("#F2673A","#C878B2","#72C8F1","#359945","#4AC2C5","#4858A7")
@@ -434,7 +434,7 @@ p4 <- DimPlot(object = ASCL1_Lineage1, reduction = "phate",group.by="PhenoGraph1
 p5 <- DimPlot(object = ASCL1_Lineage1, reduction = "urd",group.by="PhenoGraph1400",label=TRUE) +NoLegend()+labs(title="20_urd")
 p6 <- DimPlot(object = ASCL1_Lineage1, reduction = "umap",group.by="PhenoGraph1400",label=TRUE) +NoLegend()+labs(title="20_umap")
 plot_grid(p1,p2,p3,p4,p5,p6,ncol=3)
-mcsaveRDS(ASCL1_Lineage1,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20.rds", mc.cores = 20)
+mcsaveRDS(ASCL1_Lineage1,"./merge_all/ASCL1_Lineage1_sigma_20.rds", mc.cores = 20)
 ~~~
 
 ![image-20210428105138922](scRNA-seq_Chapter1.assets/image-20210428105138922.png)
@@ -443,13 +443,13 @@ mcsaveRDS(ASCL1_Lineage1,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metast
 
 ~~~R
 # Then, we need to filter some mixed-status cells that we cannot explain on biology knowledge. And also, we hope future bioinformatics could help us figure them out that explore what’s these cells , what’s their function and why they are here.
-ASCL1_Lineage <- mcreadRDS("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20.rds",mc.cores=20)
+ASCL1_Lineage <- mcreadRDS("./merge_all/ASCL1_Lineage1_sigma_20.rds",mc.cores=20)
 ASCL1_Lineage <- FindClusters(ASCL1_Lineage, resolution = c(0.1))
 filter_cells <- rownames(subset(ASCL1_Lineage@meta.data,RNA_snn_res.0.1!=1 & PhenoGraph1400==1))
 ASCL1_Lineage_REMIND <- subset(ASCL1_Lineage,cells=setdiff(colnames(ASCL1_Lineage),filter_cells))
-mcsaveRDS(ASCL1_Lineage_REMIND,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_remind.rds",mc.cores=20)
+mcsaveRDS(ASCL1_Lineage_REMIND,"./merge_all/ASCL1_Lineage1_sigma_20_remind.rds",mc.cores=20)
 
-ASCL1_Lineage_REMIND <- mcreadRDS("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_remind.rds",mc.cores=20)
+ASCL1_Lineage_REMIND <- mcreadRDS("./merge_all/ASCL1_Lineage1_sigma_20_remind.rds",mc.cores=20)
 ASCL1_Lineage_REMIND$PhenoGraph1400 <- as.character(ASCL1_Lineage_REMIND$PhenoGraph1400)
 ASCL1_Lineage_REMIND$new_clu <- as.character(ASCL1_Lineage_REMIND$PhenoGraph1400)
 ASCL1_Lineage_REMIND$new_clu <- gsub("0","2",ASCL1_Lineage_REMIND$new_clu)
@@ -472,7 +472,7 @@ DimPlot(object = ASCL1_Lineage_REMIND, reduction = "urd",group.by="new_clu",labe
 
 ~~~R
 # Calculate the metastasis SCLC patients sigantrues scores in each single cell
-CCLE_RNAseq_reads_count_normalised <- readRDS("/mnt/data/user_data/xiangyu/workshop/DATABASE/CCLE/CCLE_RNAseq_reads_count_normalised.rds")
+CCLE_RNAseq_reads_count_normalised <- readRDS("./CCLE/CCLE_RNAseq_reads_count_normalised.rds")
 library(org.Hs.eg.db)
 library(AnnotationDbi)
 CCLE_RNAseq_reads_count_normalised$SYMBOL <- mapIds(x = org.Hs.eg.db,
@@ -484,7 +484,7 @@ CCLE_RNAseq_reads_count_normalised <- na.omit(CCLE_RNAseq_reads_count_normalised
 CCLE_RNAseq_reads_count_normalised <- CCLE_RNAseq_reads_count_normalised[!duplicated(CCLE_RNAseq_reads_count_normalised$SYMBOL),]
 rownames(CCLE_RNAseq_reads_count_normalised) <- CCLE_RNAseq_reads_count_normalised$SYMBOL
 CCLE_RNAseq_reads_count_normalised <- CCLE_RNAseq_reads_count_normalised[,-ncol(CCLE_RNAseq_reads_count_normalised)]
-sample_info <- fread("/mnt/data/user_data/xiangyu/workshop/DATABASE/CCLE/sample_info.csv")
+sample_info <- fread("./CCLE/sample_info.csv")
 sample_info <- as.data.frame(sample_info)
 rownames(sample_info) <- sample_info$DepMap_ID
 sample_info_SCLC <- subset(sample_info,lineage_subtype=="SCLC")
@@ -512,20 +512,20 @@ library(tidyr)
 genelist <- genelist %>% mutate(from = convert_human_to_mouse_symbols(SYMBOL)) %>% drop_na()
 genelist_meta <- subset(genelist,logFC>0 & p_values < 0.05)
 Metastasis_UP <- subset(genelist_meta, logFC > 0.2)
-write.csv(Metastasis_UP,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/CCLE_Metastasis_UP_genes.csv")
+write.csv(Metastasis_UP,"./merge_all/CCLE_Metastasis_UP_genes.csv")
 Lineage_marker <- as.character(Metastasis_UP$from)
 Lineage_marker <- intersect(rownames(GetAssayData(object = ASCL1_Lineage_REMIND, slot = "data")),Lineage_marker)
 speci_raw <- FetchData(object = ASCL1_Lineage_REMIND, vars = Lineage_marker,slot="data")
 ASCL1_Lineage_REMIND[["CCLE_Metastasis_UP"]] <- (rowSums(speci_raw))/length(Lineage_marker)
 p1 <- XY_FeaturePlot(object = ASCL1_Lineage_REMIND, features = c("CCLE_Metastasis_UP"),pt.size=.5,ncol=2,reduction="urd",label=FALSE,
     cols = jdb_palette("solar_flare", 50, type = c("continuous"))) + labs(title="CCLE_Metastasis_UP")
-SCLC_META_VS_PRIM.markers <- mcreadRDS("/mnt/data/user_data/xiangyu/workshop/DATABASE/SCLC_Patient_data/SCLC_CTC/SCrna/CTX_Metastasis_UP.rds",mc.cores=20)
+SCLC_META_VS_PRIM.markers <- mcreadRDS("./SCLC_Patient_data/SCLC_CTC/SCrna/CTX_Metastasis_UP.rds",mc.cores=20)
 library(iTALK)
 library(nichenetr)
 library(tidyr)
 SCLC_META_VS_PRIM.markers <- SCLC_META_VS_PRIM.markers %>% mutate(from = convert_human_to_mouse_symbols(gene)) %>% drop_na()
 Metastasis_UP <- subset(SCLC_META_VS_PRIM.markers,cluster=="metastasis" & p_val_adj < 0.05 & pct.2 < 0.6 & avg_logFC > 0.15)
-write.csv(Metastasis_UP,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/CDX_Metastasis_UP_genes.csv")
+write.csv(Metastasis_UP,"./merge_all/CDX_Metastasis_UP_genes.csv")
 Lineage_marker <- Metastasis_UP$from
 Lineage_marker <- intersect(rownames(GetAssayData(object = ASCL1_Lineage_REMIND, slot = "data")),Lineage_marker)
 length(Lineage_marker)
@@ -534,7 +534,7 @@ ASCL1_Lineage_REMIND[["CDX_Metastasis_UP"]] <- (rowSums(speci_raw))/length(Linea
 p2 <-  XY_FeaturePlot(object = ASCL1_Lineage_REMIND, features = c("CTX_Metastasis_UP"),pt.size=.5,ncol=2,reduction="urd",label=FALSE,
     cols = jdb_palette("solar_flare", 50, type = c("continuous"))) + labs(title="CTX_Metastasis_UP")
 plot_grid(p1,p2)
-mcsaveRDS(ASCL1_Lineage_REMIND,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_remind.rds", mc.cores = 20)
+mcsaveRDS(ASCL1_Lineage_REMIND,"./merge_all/ASCL1_Lineage1_sigma_20_remind.rds", mc.cores = 20)
 
 ~~~
 
@@ -542,7 +542,7 @@ mcsaveRDS(ASCL1_Lineage_REMIND,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/
 
 ~~~R
 # We want to use our signatures to predict the stage of SCLC patients
-ALL_merge_data_sub.markers <- mcreadRDS("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_remind_Metastasis_vs_primary.rds")
+ALL_merge_data_sub.markers <- mcreadRDS("./merge_all/ASCL1_Lineage1_sigma_20_remind_Metastasis_vs_primary.rds")
 ALL_merge_data_sub.markers1 <- subset(ALL_merge_data_sub.markers,p_val_adj < 0.05 & pct.2 < 0.5)
 table(ALL_merge_data_sub.markers1$cluster)
 pri <- subset(ALL_merge_data_sub.markers1,cluster=="LL_Metastasis")
@@ -555,12 +555,12 @@ met = met %>% mutate(from = convert_mouse_to_human_symbols(gene)) %>% drop_na()
 
 library("survival")
 library("survminer")
-SCLC_Nature_RNA <- fread("/mnt/data/user_data/xiangyu/workshop/DATABASE/SCLC_Patient_data/SCLC_Nature_RNA.csv")
+SCLC_Nature_RNA <- fread("./SCLC_Patient_data/SCLC_Nature_RNA.csv")
 SCLC_Nature_RNA <- as.data.frame(SCLC_Nature_RNA)
 SCLC_Nature_RNA <- SCLC_Nature_RNA[!duplicated(SCLC_Nature_RNA$gene),]
 rownames(SCLC_Nature_RNA) <- SCLC_Nature_RNA$gene
 SCLC_Nature_RNA <- SCLC_Nature_RNA[,c(-1,-2)]
-SCLC_Nature_Clinical <- fread("/mnt/data/user_data/xiangyu/workshop/DATABASE/SCLC_Patient_data/SCLC_Nature_Clinical.csv")
+SCLC_Nature_Clinical <- fread("./SCLC_Patient_data/SCLC_Nature_Clinical.csv")
 SCLC_Nature_Clinical <- as.data.frame(SCLC_Nature_Clinical)
 rownames(SCLC_Nature_Clinical) <- SCLC_Nature_Clinical$'Sample-ID'
 both_id <- intersect(colnames(SCLC_Nature_RNA),rownames(SCLC_Nature_Clinical))
@@ -604,7 +604,7 @@ surv.median.line = "hv",
 pval = TRUE,
 ggtheme = theme_bw(),
 risk.table=TRUE)
-ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Figure_making/pri_sig_with_Nature_Patients_survival_clu1.svg", plot=aa$plot,width = 4, height = 4,dpi=1080)
+ggsave("./merge_all/Figure_making/pri_sig_with_Nature_Patients_survival_clu1.svg", plot=aa$plot,width = 4, height = 4,dpi=1080)
 ~~~
 
 ![image-20210428133950451](scRNA-seq_Chapter1.assets/image-20210428133950451.png)
@@ -645,7 +645,7 @@ all_meta <- cbind(all_meta,pseudo[,c("slingPseudotime_1")])
 ASCL1_Lineage_REMIND@meta.data <- as.data.frame(all_meta)
 colnames(ASCL1_Lineage_REMIND@meta.data)[ncol(ASCL1_Lineage_REMIND@meta.data)] <- c("SCLC_Metastasis")
 Pesudo_FeaturePlot(object = ASCL1_Lineage_REMIND, features = c("SCLC_Metastasis"),ncol=1,pt.size=.5,reduction="urd",label=T,cols = CustomPalette(low ="#007BBF", mid = "#FFF485",high = "#FF0000")) +NoAxes()
-mcsaveRDS(ASCL1_Lineage_REMIND,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_remind.rds",mc.cores=20)
+mcsaveRDS(ASCL1_Lineage_REMIND,"./merge_all/ASCL1_Lineage1_sigma_20_remind.rds",mc.cores=20)
 ~~~
 
 ![image-20210428110057569](scRNA-seq_Chapter1.assets/image-20210428110057569.png)
@@ -654,7 +654,7 @@ mcsaveRDS(ASCL1_Lineage_REMIND,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/
 
 ~~~R
 # here, we used principles implemented in monocle to identify the dynamics expression genes based on Ascl1+ SCLC trajectory 
-ASCL1_Lineage_REMIND <- mcreadRDS("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_remind.rds",mc.cores=20)
+ASCL1_Lineage_REMIND <- mcreadRDS("./merge_all/ASCL1_Lineage1_sigma_20_remind.rds",mc.cores=20)
 library(monocle)
 seuratX <- ASCL1_Lineage_REMIND
 data <- as(as.matrix(seuratX@assays$RNA@data), 'sparseMatrix')
@@ -673,7 +673,7 @@ scale_min = -3
 trend_formula = "~sm.ns(Pseudotime, df=3)"
 newdata <- data.frame(Pseudotime = seq(min(pData(cds_subset)$Pseudotime),max(pData(cds_subset)$Pseudotime), length.out = 100))
 m <- genSmoothCurves(cds_subset, cores = 30, trend_formula = trend_formula,relative_expr = T, new_data = newdata)
-mcsaveRDS(m,file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_All_genes_m.rds",mc.cores=20)
+mcsaveRDS(m,file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_All_genes_m.rds",mc.cores=20)
 m1 = m[!apply(m, 1, sum) == 0, ]
 m1 = log10(m1 + 1)
 m1 = m1[!apply(m1, 1, sd) == 0, ]
@@ -682,13 +682,13 @@ m1 = m1[is.na(row.names(m1)) == FALSE, ]
 m1[is.nan(m1)] = 0
 m1[m1 > scale_max] = scale_max
 m1[m1 < scale_min] = scale_min
-mcsaveRDS(m1,file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_All_genes_m_normalised.rds",mc.cores=20)
+mcsaveRDS(m1,file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_All_genes_m_normalised.rds",mc.cores=20)
 
 
 diff_test_res <- monocle::differentialGeneTest(monocle_obj2,
               fullModelFormulaStr = "~sm.ns(Pseudotime)",
               cores=30)
-mcsaveRDS(diff_test_res,file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_genes.rds",mc.cores=20)
+mcsaveRDS(diff_test_res,file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_genes.rds",mc.cores=20)
 
 Binner <- function(cds_object,cells_subset,anno_group){
   df <- data.frame(pData(cds_object[,cells_subset]))
@@ -721,8 +721,8 @@ colnames(bin) <- c("clu","group","new_clu")
 bin$clu <- as.character(bin$clu)
 bin$group <- as.character(bin$group)
 bin$new_clu <- as.character(bin$new_clu)
-mcsaveRDS(bin,file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_col_bin.rds",mc.cores=20)
-diff_test_res <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_genes.rds",mc.cores=20)
+mcsaveRDS(bin,file="./merge_all/ASCL1_Lineage1_sigma_20_col_bin.rds",mc.cores=20)
+diff_test_res <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_genes.rds",mc.cores=20)
 sig_gene_names <- row.names(subset(diff_test_res, qval < 1e-20))
 subset(diff_test_res,gene_short_name=="Kmt2c")
 subset(diff_test_res,gene_short_name=="Dnmt3a")
@@ -749,15 +749,15 @@ trend_formula = "~sm.ns(Pseudotime, df=3)"
 pseudocount <- 1
 annotation_col <- bin
 newdata <- data.frame(Pseudotime = seq(min(pData(cds_subset)$Pseudotime),max(pData(cds_subset)$Pseudotime), length.out = 100))
-m <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_m.rds",mc.cores=20)
-heatmap_matrix <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_matrix.rds",mc.cores=20)
+m <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_m.rds",mc.cores=20)
+heatmap_matrix <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_matrix.rds",mc.cores=20)
 row_dist <- as.dist((1 - cor(Matrix::t(heatmap_matrix)))/2)
 row_dist[is.na(row_dist)] <- 1
 bks <- seq(-3.1, 3.1, by = 0.1)
 hmcols <- monocle:::blue2green2red(length(bks) - 1)
 aa <- jdb_palette("brewer_celsius")
 hmcols <- colorRampPalette(aa)(length(bks) - 1)
-ph <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_anno.rds",mc.cores=20)
+ph <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_anno.rds",mc.cores=20)
 cds_subset <- monocle_obj2[sig_gene_names,]
 annotation_row <- data.frame(Cluster = factor(cutree(ph$tree_row,6)))
 annotation_row$gene <- rownames(annotation_row)
@@ -799,10 +799,10 @@ ph_res <- pheatmap(heatmap_matrix[,], useRaster = T, cluster_cols = FALSE,
     annotation_row = annotation_row1, annotation_col = annotation_col,
     treeheight_row = 20, breaks = bks, fontsize = 6, color = hmcols,
     border_color = NA, silent = TRUE, filename = NA)
-pdf(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_with_anno.pdf",width = 10, height = 200)
+pdf(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_with_anno.pdf",width = 10, height = 200)
 ph_res
 dev.off()
-png(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_with_anno.png")
+png(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_with_anno.png")
 ph_res
 dev.off()
 
@@ -814,7 +814,7 @@ ph_res <- pheatmap(heatmap_matrix[,], useRaster = T, cluster_cols = FALSE,
     annotation_row = annotation_row1, annotation_col = annotation_col,
     treeheight_row = 20, breaks = bks, fontsize = 6, color = hmcols,
     border_color = NA, silent = TRUE, filename = NA)
-pdf(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/v3_ASCL1_Lineage1_sigma_20_peudotime_with_anno.pdf",width = 10, height = 200)
+pdf(file="./merge_all/v3_ASCL1_Lineage1_sigma_20_peudotime_with_anno.pdf",width = 10, height = 200)
 ph_res
 dev.off()
 ~~~
@@ -822,8 +822,8 @@ dev.off()
 ![ASCL1_Lineage1_sigma_20_peudotime_with_anno](scRNA-seq_Chapter1.assets/ASCL1_Lineage1_sigma_20_peudotime_with_anno.png)
 
 ~~~R
-annotation_row1 <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_all_v2.rds",mc.cores=20)
-heatmap_matrix <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_matrix.rds",mc.cores=20)
+annotation_row1 <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_all_v2.rds",mc.cores=20)
+heatmap_matrix <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_matrix.rds",mc.cores=20)
 heatmap_matrix1 <- heatmap_matrix
 colnames(heatmap_matrix1) <- paste0("order_",colnames(heatmap_matrix))
 heatmap_matrix1 <- reshape2::melt(heatmap_matrix1)
@@ -836,17 +836,17 @@ aa <- ggplot(heatmap_matrix1, aes(Order, value,color=Module)) +
   geom_point(alpha=0,size=0)+
   xlab("Pseudotime")+
   theme_classic() + geom_smooth(se=TRUE) + labs(title="All Modules")
-ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Figure_making/v2_dynamics_trend.svg", plot=aa,width = 5, height = 4,dpi=1080)
+ggsave("./merge_all/Figure_making/v2_dynamics_trend.svg", plot=aa,width = 5, height = 4,dpi=1080)
 ~~~
 
 ![image-20210428134733562](scRNA-seq_Chapter1.assets/image-20210428134733562.png)
 
 ~~~R
 # Showed the dynamics relative expression levels of interested genes based on Ascl1+ SCLC trajectory.
-All_genes_m <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_All_genes_m_normalised.rds",mc.cores=20)
+All_genes_m <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_heatmap_All_genes_m_normalised.rds",mc.cores=20)
 All_genes_m <- as.data.frame(All_genes_m)
 sel_data <- All_genes_m[c("Nfib","Ascl1","Neurod1","Kmt2c","Sox2","Dnmt3a","Mki67"),]
-bin <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_col_bin.rds",mc.cores=20)
+bin <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_col_bin.rds",mc.cores=20)
 colnames(sel_data) <- paste0("Clu_",bin$State)
 sel_data <- as.data.frame(t(sel_data))
 sel_data$group <- rownames(sel_data)
@@ -870,7 +870,7 @@ p4 <- ggplot(sel_data, aes(order, Neurod1,color=group)) +
   geom_rug(alpha = 0.8, position = "jitter",sides="b")+ xlab("Pseudotime")+
   theme_classic() + geom_smooth(colour = "orange",se=TRUE) +NoLegend()+ labs(title="Neurod1")
 aa <- plot_grid(p1,p2,p3,p4,ncol=4)
-ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Figure_making/v2_marker_Neurod1_SCLC_phate.svg", plot=aa,width = 15, height = 4,dpi=1080)
+ggsave("./merge_all/Figure_making/v2_marker_Neurod1_SCLC_phate.svg", plot=aa,width = 15, height = 4,dpi=1080)
 ~~~
 
 ![image-20210428140740130](scRNA-seq_Chapter1.assets/image-20210428140740130.png)
@@ -878,7 +878,7 @@ ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Fi
 ~~~R
 # UP till now, we have generated four sub-modules of dynamics expression genes based on Ascl1+ SCLC trajectory.
 # We also want to explore the biology meaning in each sub-module by combining clinical information such as survival rates and metastasis status.
-annotation_row1 <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_all_v2.rds",mc.cores=20)
+annotation_row1 <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_all_v2.rds",mc.cores=20)
 annotation_row1$gene <- rownames(annotation_row1)
 clu1 <- subset(annotation_row1,Cluster==1)
 clu2 <- subset(annotation_row1,Cluster==2)
@@ -891,7 +891,7 @@ clu1 = clu1 %>% mutate(from = convert_mouse_to_human_symbols(gene), to = convert
 clu2 = clu2 %>% mutate(from = convert_mouse_to_human_symbols(gene), to = convert_mouse_to_human_symbols(gene)) %>% drop_na()
 clu3 = clu3 %>% mutate(from = convert_mouse_to_human_symbols(gene), to = convert_mouse_to_human_symbols(gene)) %>% drop_na()
 
-CDX_META_INFO <- read.csv("/mnt/data/user_data/xiangyu/workshop/DATABASE/SCLC_Patient_data/SCLC_CTC/bulk_RNA/counts_table/CDX_META_INFO.csv")
+CDX_META_INFO <- read.csv("./SCLC_Patient_data/SCLC_CTC/bulk_RNA/counts_table/CDX_META_INFO.csv")
 CDX_META_INFO$CDX.No. <- paste0("CDX",CDX_META_INFO$CDX.No.)
 CDX_META_INFO$CDX.No. <- gsub("CDX33P","CDX33/33P",CDX_META_INFO$CDX.No.)
 all_tmp_data <- future_lapply(CDX_META_INFO$CDX.No.,function(x){
@@ -921,7 +921,7 @@ names(group) <- names
 all_tmp$Type <- group[all_tmp$id]
 all_tmp$Type <- paste0(all_tmp$Type," + SCLC")
 
-CDXData <- read.csv("/mnt/data/user_data/xiangyu/workshop/DATABASE/SCLC_Patient_data/SCLC_CTC/bulk_RNA/counts_table/FinalCDXDataTable.csv")
+CDXData <- read.csv("./SCLC_Patient_data/SCLC_CTC/bulk_RNA/counts_table/FinalCDXDataTable.csv")
 CDXData <- CDXData[!duplicated(CDXData$gene_name),]
 rownames(CDXData) <- CDXData$gene_name
 CDXData <- CDXData[,-c(1,2,3)]
@@ -980,14 +980,14 @@ ph_res <- pheatmap(t(chonglai_zscore_1), useRaster = T, cluster_cols = FALSE,
     annotation_col = annotation_col1, 
     treeheight_row = 20, breaks = bks, color = hmcols,
     border_color = NA, silent = TRUE, filename = NA)
-write.csv(annotation_col,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_SCLC_classification.csv")
-annotation_col <- read.csv("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_SCLC_classification.csv")
+write.csv(annotation_col,"./merge_all/ASCL1_Lineage1_sigma_20_SCLC_classification.csv")
+annotation_col <- read.csv("./merge_all/ASCL1_Lineage1_sigma_20_SCLC_classification.csv")
 annotation_col$group1 <- ifelse(annotation_col$group=="clu1", "Module I Like",
   ifelse(annotation_col$group=="clu2", "Module II Like","Module III Like"))
-write.csv(annotation_col,"/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_SCLC_classification.csv")
+write.csv(annotation_col,"./merge_all/ASCL1_Lineage1_sigma_20_SCLC_classification.csv")
 ~~~
 
-![image-20210428114844713](scRNA-seq_Chapter1.assets/image-20210428114844713.png)
+![image-20210428114844713](SCLC_Patients_usage.assets/image-20210428114844713.png)
 
 ~~~R
 summar_group <- as.data.frame(table(annotation_col$Treatment.Response,annotation_col$group))
@@ -1028,12 +1028,12 @@ plot_grid(p1,p2)
 ~~~R
 library("survival")
 library("survminer")
-SCLC_Nature_RNA <- fread("/mnt/data/user_data/xiangyu/workshop/DATABASE/SCLC_Patient_data/SCLC_Nature_RNA.csv")
+SCLC_Nature_RNA <- fread("./SCLC_Patient_data/SCLC_Nature_RNA.csv")
 SCLC_Nature_RNA <- as.data.frame(SCLC_Nature_RNA)
 SCLC_Nature_RNA <- SCLC_Nature_RNA[!duplicated(SCLC_Nature_RNA$gene),]
 rownames(SCLC_Nature_RNA) <- SCLC_Nature_RNA$gene
 SCLC_Nature_RNA <- SCLC_Nature_RNA[,c(-1,-2)]
-SCLC_Nature_Clinical <- fread("/mnt/data/user_data/xiangyu/workshop/DATABASE/SCLC_Patient_data/SCLC_Nature_Clinical.csv")
+SCLC_Nature_Clinical <- fread("./SCLC_Patient_data/SCLC_Nature_Clinical.csv")
 SCLC_Nature_Clinical <- as.data.frame(SCLC_Nature_Clinical)
 rownames(SCLC_Nature_Clinical) <- SCLC_Nature_Clinical$'Sample-ID'
 both_id <- intersect(colnames(SCLC_Nature_RNA),rownames(SCLC_Nature_Clinical))
@@ -1042,7 +1042,7 @@ table(SCLC_Nature_Clinical_SEL$'primary tumor/metastasis')
 colnames(SCLC_Nature_Clinical_SEL)[21] <- "primary_tumor_metastasis"
 SCLC_Nature_RNA <- log(SCLC_Nature_RNA+1,2)
 SCLC_Nature_RNA <- as.data.frame(t(SCLC_Nature_RNA))
-annotation_row1 <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_all_v2.rds",mc.cores=20)
+annotation_row1 <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_all_v2.rds",mc.cores=20)
 annotation_row1$gene <- rownames(annotation_row1)
 clu1 <- subset(annotation_row1,Cluster==1)
 clu2 <- subset(annotation_row1,Cluster==2)
@@ -1112,7 +1112,7 @@ surv.median.line = "hv",
 pval = TRUE,
 ggtheme = theme_bw(),
 risk.table=TRUE)
-ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Figure_making/v2_SCLC_ASCL1_pseudotime_with_Nature_Patients_survival_clu1.svg", plot=aa$plot,width = 4, height = 4,dpi=1080)
+ggsave("./merge_all/Figure_making/v2_SCLC_ASCL1_pseudotime_with_Nature_Patients_survival_clu1.svg", plot=aa$plot,width = 4, height = 4,dpi=1080)
 ~~~
 
 ![image-20210428133423647](scRNA-seq_Chapter1.assets/image-20210428133423647.png)
@@ -1124,7 +1124,7 @@ ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Fi
 # Part7. Pathways enrichments
 
 ~~~R
-annotation_row1 <- mcreadRDS(file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_all_v2.rds",mc.cores=20)
+annotation_row1 <- mcreadRDS(file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_all_v2.rds",mc.cores=20)
 col_genes <- annotation_row1
 col_genes$gene <- rownames(col_genes)
 info <- col_genes[,c("Cluster","gene")]
@@ -1156,7 +1156,7 @@ HLH_T1_OFF_HIGH_KEGG <- compareCluster(geneCluster = gcSampl, fun = "enrichKEGG"
   use_internal_data=TRUE, minGSSize = 5)
 HLH_T1_OFF_HIGH_GO <- compareCluster(geneCluster = gcSampl, fun = "enrichGO",OrgDb="org.Mm.eg.db",keyType = "ENTREZID", ont = "BP",readable = TRUE,
   minGSSize = 5)
-mcsaveRDS(HLH_T1_OFF_HIGH_GO,file="/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_GO_v2.rds",mc.cores=20) 
+mcsaveRDS(HLH_T1_OFF_HIGH_GO,file="./merge_all/ASCL1_Lineage1_sigma_20_peudotime_annotation_row1_GO_v2.rds",mc.cores=20) 
 
 SE_all_clu1 <- as.data.frame(HLH_T1_OFF_HIGH_GO)
 SE_all_clu1 <- SE_all_clu1[order(SE_all_clu1$Cluster,(SE_all_clu1$p.adjust)),]
@@ -1177,7 +1177,7 @@ rownames(SE_all_clu1) <- SE_all_clu1$ID
 data_sel <- new("compareClusterResult", compareClusterResult = SE_all_clu1, geneClusters = gcSampl,fun = "enrichKEGG")
 aa <- dotplot(data_sel,showCategory=5,includeAll=FALSE) + 
   theme(axis.text.x  = element_text(angle=45, vjust=1,size=8,hjust = 1)) + labs(title = "GO BP")
-ggsave("/mnt/data/user_data/xiangyu/workshop/scRNA/SCLC/metastasisi/merge_all/Figure_making/v2_Neurod1_Lineage_tranje_GO_BP.svg", plot=aa,width = 6, height = 5,dpi=1080)
+ggsave("./merge_all/Figure_making/v2_Neurod1_Lineage_tranje_GO_BP.svg", plot=aa,width = 6, height = 5,dpi=1080)
 
 ~~~
 
