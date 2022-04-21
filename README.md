@@ -1,5 +1,9 @@
 # **KMT2C deficiency promotes small cell lung cancer metastasis through DNMT3A-mediated epigenetic reprogramming**
-![image-20211108205319745](README.assets/image-20211108205319745.png)
+
+
+This page recorded the codes and data used and mentioned in [*Nature Cancer*](https://www.nature.com/articles/s43018-022-00361-6). And you could downloaded this paper by clicking [here](paper/KMT2C_deficiency_promotes_SCLC_metastasis.pdf)
+
+![image-20220420234901529](README.assets/image-20220420234901529.png)
 
 ​	A prevalent bottleneck for metastasis researches is the lack of resected samples because patients with metastases won’t be treated with surgery, which is the case for the majority of SCLC patients. Therefore, mouse models of SCLC which can recapitulate the clinical features of the human disease are especially of value.
 
@@ -350,7 +354,7 @@ And the detail lists were displayed as following:
 
 # **Citation**
 
-Our paper has been published on XXXXX
+Our paper has been published on [*Nature Cancer*](https://www.nature.com/articles/s43018-022-00361-6)
 
 You could downloaded raw data from [GEO Database GSE161570](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE161570)
 
